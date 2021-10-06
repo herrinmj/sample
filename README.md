@@ -1,6 +1,6 @@
-## Sample Documents
 
-## Dashboard
+
+# Dashboard
 
 ![BaselineVsOptimized](https://user-images.githubusercontent.com/79966817/136270980-831deb75-1cd1-44b6-ad99-33292e40fb48.png)
 
@@ -11,8 +11,8 @@
 ![baseline v opt](https://user-images.githubusercontent.com/79966817/136274170-21f991fc-6920-48ca-8ae8-9f95063415f7.png)
 
 
-## Sample SQL Code
-# Reverse engineering default building settings without optimization for comparison 
+# Sample SQL Code
+### Reverse engineering default building settings without optimization for comparison 
 ``` 
 SELECT * 
 FROM (
