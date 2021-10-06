@@ -13,6 +13,7 @@
 
 ## Sample SQL Code
 # Reverse engineering default building settings without optimization for comparison 
+``` 
 SELECT * 
 FROM (
   SELECT  d.DateCreatedUTC , 
@@ -61,4 +62,4 @@ FROM (
 	GROUP BY t.id, t.readName
 ) as t2̈́
 ORDER BY DateCreatedUTC DESC
-
+```
