@@ -26,40 +26,41 @@ FROM (
           s.Enabled =1 AND 
           d.DateCreatedUTC > DATEADD(dd, -7, GETUTCDATE())
       ) as t
-OUTER APPLY (
-SELECT  t.id, t.readName, 
-        MAX(CalcSetPoint) as CalculatedSetPoint
-FROM (
-    SELECT *,
-	  CASE WHEN TempOutside >= OutsideTemp AND TempOutside <= LeadOutsideTemp THEN FallbackValue + (TempOutside - OutsideTemp) / (LeadOutsideTemp - OutsideTemp) * (LeadFallback - FallbackValue) ELSE NULL	END as CalcSetPoint
-	  FROM  (
-		      SELECT *,
-		      LEAD(FallbackValue) OVER (PARTITION BY t.id ORDER BY idx ASC) as LeadFallback,
-		      LEAD(OutsideTemp) OVER (PARTITION BY t.id ORDER BY idx ASC) as LeadOutsideTemp
-		      FROM (
-              SELECT  *,
-			                (idx-1) / (MAX(idx) OVER (partition BY t.id)-1) Proportion,
-			                -20 + (40*(idx-1) / (MAX(idx) OVER (partition BY t.id)-1)) OutsideTemp
-			        FROM(
-                  SELECT  sr.id, 
-                          sr.Name as readName,
-				                  sw.Name as writeName,
-			                  	sw.FallbackValue,
-				                  CAST(RIGHT(sw.Name, 1) as float) as idx
-				          FROM Signals sr
-				          INNER JOIN Transformation t  ON t.SignalParentID =sr.ID 
-				          INNER JOIN Signals sw ON sw.id = t.SignalID
-				          INNER JOIN Buildings b ON b.id=sr.BuildingID 
+ OUTER APPLY (
+   SELECT  t.id, 
+   	   t.readName, 
+           MAX(CalcSetPoint) as CalculatedSetPoint
+    FROM (
+    	SELECT *,
+	       CASE WHEN TempOutside >= OutsideTemp AND TempOutside <= LeadOutsideTemp THEN FallbackValue + (TempOutside - OutsideTemp) / (LeadOutsideTemp - OutsideTemp) * (LeadFallback - FallbackValue) ELSE NULL	END as CalcSetPoint
+    	FROM  (
+	      	SELECT *,
+		       LEAD(FallbackValue) OVER (PARTITION BY t.id ORDER BY idx ASC) as LeadFallback,
+		       LEAD(OutsideTemp) OVER (PARTITION BY t.id ORDER BY idx ASC) as LeadOutsideTemp
+   	      	FROM (
+             	       SELECT  *,
+		               (idx-1) / (MAX(idx) OVER (partition BY t.id)-1) Proportion,
+		     		-20 + (40*(idx-1) / (MAX(idx) OVER (partition BY t.id)-1)) OutsideTemp
+	      	       FROM (
+                  		SELECT  sr.id, 
+                          		sr.Name as readName,
+				        sw.Name as writeName,
+			                sw.FallbackValue,
+				        CAST(RIGHT(sw.Name, 1) as float) as idx
+				        FROM Signals sr
+				        INNER JOIN Transformation t  ON t.SignalParentID =sr.ID 
+				        INNER JOIN Signals sw ON sw.id = t.SignalID
+				        INNER JOIN Buildings b ON b.id=sr.BuildingID 
 			          	WHERE sr.rw='r' AND 
-                        sr.Name LIKE '%vs%'AND 
-                        sr.Enabled =1 AND
-                        sw.Name LIKE '%[_]Y_' AND
-                        b.name = '******'
-					      ) as t
-				   ) as t
-			  ) as t
-		) as t
-	GROUP BY t.id, t.readName
-) as t2̈́
+                       			      sr.Name LIKE '%vs%'AND 
+                        		      sr.Enabled =1 AND
+                        		      sw.Name LIKE '%[_]Y_' AND
+                       			      b.name = '******'
+			     ) as t
+		    ) as t
+	       ) as t
+       ) as t
+   	GROUP BY t.id, t.readName
+ ) as t2̈́
 ORDER BY DateCreatedUTC DESC
 ```
